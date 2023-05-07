@@ -4,11 +4,14 @@ import openai
 openai.api_key = "insert_your_api_key"
 
 app = Flask(__name__)
+app = Flask(__name__, static_url_path='', static_folder='')
 
 
-@app.route('/')
+
+@app.route('/', methods=['GET'])
 def index():
     return app.send_static_file('index.html')
+
 
 @app.route('/change', methods=['POST'])
 def handle_change():
@@ -34,6 +37,7 @@ def handle_change():
         f.write(updated_content)
 
     return 'Code updated successfully!'
+
 
 if __name__ == '__main__':
     app.run(debug=True)
