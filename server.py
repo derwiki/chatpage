@@ -5,6 +5,11 @@ openai.api_key = "insert_your_api_key"
 
 app = Flask(__name__)
 
+
+@app.route('/')
+def index():
+    return app.send_static_file('index.html')
+
 @app.route('/change', methods=['POST'])
 def handle_change():
     text = request.form.get('change-input')
