@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, redirect
 import openai
 
 import os
@@ -7,7 +7,6 @@ openai.api_key = os.getenv('OPENAI_API_KEY')
 
 app = Flask(__name__)
 app = Flask(__name__, static_url_path='', static_folder='')
-
 
 
 @app.route('/', methods=['GET'])
@@ -19,26 +18,33 @@ def index():
 def handle_change():
     text = request.form.get('change-input')
 
-    # Construct OpenAI request with the input text as prompt
-    prompt = f"Change the code in index.html: {text}"
-    response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
-        prompt=prompt,
-        max_tokens=1024,
-        n=1,
-        stop=None,
-        temperature=0.5,
-    )
-
-    # Get the generated code and replace it in index.html
-    generated_code = response.choices[0].text
     with open('index.html', 'r') as f:
         file_content = f.read()
-        updated_content = file_content.replace('<!-- OLD CODE HERE -->', generated_code)
-    with open('index.html', 'w') as f:
-        f.write(updated_content)
 
-    return 'Code updated successfully!'
+    # Construct OpenAI request with the input text as prompt
+    prompt = f"""Change the code in index.html according to the prompt. Your response should only include html and nothing to escape the code.
+
+Prompt:
+{text}
+
+index.html:
+{file_content}
+"""
+    response = openai.ChatCompletion.create(
+        model='gpt-4',  # so slow
+        messages=[{"role": "system", "content": "You are a helpful assistant."},
+                  {"role": "user", "content": prompt}],
+        max_tokens=4000,
+        temperature=0.0
+    )
+
+    response_content = response.choices[0].message['content'].strip()
+
+    # Get the generated code and replace it in index.html
+    with open('index.html', 'w') as f:
+        f.write(response_content)
+
+    return redirect('/')
 
 
 if __name__ == '__main__':
