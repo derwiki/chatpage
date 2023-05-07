@@ -1,7 +1,9 @@
 from flask import Flask, request
 import openai
 
-openai.api_key = "insert_your_api_key"
+import os
+
+openai.api_key = os.getenv('OPENAI_API_KEY')
 
 app = Flask(__name__)
 app = Flask(__name__, static_url_path='', static_folder='')
@@ -19,8 +21,8 @@ def handle_change():
 
     # Construct OpenAI request with the input text as prompt
     prompt = f"Change the code in index.html: {text}"
-    response = openai.Completion.create(
-        engine="davinci-codex",
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
         prompt=prompt,
         max_tokens=1024,
         n=1,
