@@ -61,6 +61,7 @@ def handle_change():
 Your response should only include html and nothing to escape the code.
 Make sure the new index.html is less than the token limit.
 The new code must include the POST form with the change-input text field.
+The generated html should be optimized for smallest possible size while fulfilling the prompt.
     
 Prompt:
 {text}
@@ -89,6 +90,7 @@ index.html:
     log.info("handle_change response_content:\n%s", response_content)
 
     # Get the generated code and replace it in index-{session_id}.html
+    log.info(f'writing to templates/{session_template_filename(session_id)}')
     with open(f'templates/{session_template_filename(session_id)}', 'w') as f:
         f.write(response_content)
 
