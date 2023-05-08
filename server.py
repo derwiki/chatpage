@@ -69,13 +69,22 @@ index.html:
 {file_content}
 """
     response = openai.ChatCompletion.create(
-        model='gpt-4',  # so slow
+        model='gpt-3.5-turbo',  # so slow
         messages=[{"role": "system", "content": "You are a helpful assistant."},
                   {"role": "user", "content": prompt}],
-        max_tokens=4000,
+        max_tokens=1999,
         temperature=0.0
     )
+    '''
+    response = openai.Completion.create(
+        enginer='davinci-codex',
+        temperature=0.0,
+        max_tokens=8001,
+        prompt=prompt,
+    )
+    '''
 
+    # response_content = response.choices[0].text.strip()
     response_content = response.choices[0].message['content'].strip()
     log.info("handle_change response_content:\n%s", response_content)
 
