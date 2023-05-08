@@ -10,7 +10,6 @@ import os
 openai.api_key = os.getenv('OPENAI_API_KEY')
 
 app = Flask(__name__)
-app = Flask(__name__, static_url_path='', static_folder='')
 
 log = logging.getLogger(__file__)
 log.setLevel(logging.INFO)
