@@ -37,7 +37,7 @@ def template_filename_for_reading(session_id: str) -> str:
 
 
 def session_template_exists(session_id: str) -> bool:
-    return os.path.exists(session_template_filename(session_id))
+    return os.path.exists(f'templates/{session_template_filename(session_id)}')
 
 
 @app.route('/', methods=['GET'])
@@ -56,6 +56,7 @@ def handle_change():
     with open(template_filename_for_reading(session_id), 'r') as f:
         file_content = f.read()
 
+    # TODO(derwiki) construct in haml to save tokens
     # Construct OpenAI request with the input text as prompt
     prompt = f"""Change the code in index.html according to the prompt.
 Your response should only include html and nothing to escape the code.
@@ -77,6 +78,7 @@ index.html:
     )
 
     response_content = response.choices[0].message['content'].strip()
+    log.info("handle_change response_content:\n%s", response_content)
 
     # Get the generated code and replace it in index-{session_id}.html
     with open(f'templates/{session_template_filename(session_id)}', 'w') as f:

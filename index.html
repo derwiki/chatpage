@@ -4,7 +4,7 @@
   </head>
   <body>
     <h1>What do you want to change about this page?</h1>
-    <form method="POST" action="/change">
+    <form method="POST" action="/change?session_id={{session_id}}">
       <label for="change-input">Change:</label>
       <input type="text" id="change-input" name="change-input">
       <button type="submit">Change</button>
