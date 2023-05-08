@@ -1,4 +1,8 @@
-from flask import Flask, request, redirect
+import logging
+import sys
+import uuid
+
+from flask import Flask, request, redirect, render_template
 import openai
 
 import os
@@ -8,22 +12,56 @@ openai.api_key = os.getenv('OPENAI_API_KEY')
 app = Flask(__name__)
 app = Flask(__name__, static_url_path='', static_folder='')
 
+log = logging.getLogger(__file__)
+log.setLevel(logging.INFO)
+
+handler = logging.StreamHandler(sys.stdout)
+handler.setLevel(logging.INFO)
+
+log.addHandler(handler)
+
+
+def get_or_create_session_id() -> str:
+    if get_session_id := request.args.get('session_id'):
+        return get_session_id
+    else:
+        return str(uuid.uuid4())
+
+
+def session_template_filename(s: str) -> str:
+    return f'index-{s}.html'
+
+
+def template_filename_for_reading(session_id: str) -> str:
+    return session_template_filename(session_id) if session_template_exists(session_id) else 'index.html'
+
+
+def session_template_exists(session_id: str) -> bool:
+    return os.path.exists(session_template_filename(session_id))
+
 
 @app.route('/', methods=['GET'])
 def index():
-    return app.send_static_file('index.html')
+    session_id = get_or_create_session_id()
+    log.info("index %s", {session_id: session_id})
+    return render_template(template_filename_for_reading(session_id), session_id=session_id)
 
 
 @app.route('/change', methods=['POST'])
 def handle_change():
     text = request.form.get('change-input')
+    session_id = get_or_create_session_id()
+    log.info("handle_change %s", {"session_id": session_id, "text": text})
 
-    with open('index.html', 'r') as f:
+    with open(template_filename_for_reading(session_id), 'r') as f:
         file_content = f.read()
 
     # Construct OpenAI request with the input text as prompt
-    prompt = f"""Change the code in index.html according to the prompt. Your response should only include html and nothing to escape the code.
-
+    prompt = f"""Change the code in index.html according to the prompt.
+Your response should only include html and nothing to escape the code.
+Make sure the new index.html is less than the token limit.
+The new code must include the POST form with the change-input text field.
+    
 Prompt:
 {text}
 
@@ -40,11 +78,11 @@ index.html:
 
     response_content = response.choices[0].message['content'].strip()
 
-    # Get the generated code and replace it in index.html
-    with open('index.html', 'w') as f:
+    # Get the generated code and replace it in index-{session_id}.html
+    with open(f'templates/{session_template_filename(session_id)}', 'w') as f:
         f.write(response_content)
 
-    return redirect('/')
+    return redirect(f'/?session_id={session_id}')
 
 
 if __name__ == '__main__':
