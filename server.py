@@ -52,7 +52,7 @@ def handle_change():
     session_id = get_or_create_session_id()
     log.info("handle_change %s", {"session_id": session_id, "text": text})
 
-    with open(template_filename_for_reading(session_id), 'r') as f:
+    with open(f'templates/{template_filename_for_reading(session_id)}', 'r') as f:
         file_content = f.read()
 
     # TODO(derwiki) construct in haml to save tokens
